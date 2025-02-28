@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet's Social</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-1: #f1c1d9;
+            --color-2: #f7b6e0;
+            --color-3: #f49ac2;
+            --color-4: #d57b9b;
+            --color-5: #b65d7e;
+            --border-radius: 20px;
+            --font-size-base: 16px; /* Tamaño base de la fuente */
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--color-1), var(--color-2));
+            font-family: 'Poppins', sans-serif;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-size: var(--font-size-base); /* Usar la variable para el tamaño de la fuente */
+        }
+
+        .navbar {
+            background-color: var(--color-3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar:hover {
+            background-color: var(--color-4);
+        }
+
+        .navbar-brand {
+            font-size: calc(var(--font-size-base) * 1.75); /* Tamaño relativo */
+            font-weight: bold;
+            color: #ffffff !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-primary {
+            background-color: var(--color-5);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            font-size: calc(var(--font-size-base) * 1); 
+            font-weight: bold;
+            color: #ffffff;
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-primary2 {
+            background-color: var(--color-3);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            font-size: calc(var(--font-size-base) * 1); 
+            font-weight: bold;
+            color: #ffffff;
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--color-4);
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 100px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            margin: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .hero-section h1 {
+            color: var(--color-5);
+            font-size: calc(var(--font-size-base) * 3); /* Tamaño relativo */
+            font-weight: bold;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero-section p {
+            color: var(--color-5);
+            font-size: calc(var(--font-size-base) * 1.25); /* Tamaño relativo */
+            max-width: 600px;
+            margin: 0 auto 30px;
+            animation: fadeInUp 2s ease-in-out;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            animation: fadeInUp 2.5s ease-in-out;
+        }
+
+        .cta-buttons .btn {
+            font-size: calc(var(--font-size-base) * 1.125); /* Tamaño relativo */
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+        }
+
+        .features-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 50px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            margin: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            background-color: var(--color-1);
+        }
+
+        .feature-card i {
+            font-size: calc(var(--font-size-base) * 2.5); /* Tamaño relativo */
+            color: var(--color-5);
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover i {
+            transform: rotate(360deg);
+        }
+
+        .feature-card h3 {
+            color: var(--color-5);
+            font-size: calc(var(--font-size-base) * 1.5); /* Tamaño relativo */
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: var(--color-4);
+            font-size: calc(var(--font-size-base) * 1); /* Tamaño relativo */
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cursor-effect {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--color-5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkle 0.5s ease-out;
+        }
+
+        .paw-print {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            animation: fadeOut 1s ease-out;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        /* Botones de tamaño de fuente */
+        .font-size-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .font-size-buttons button {
+            background-color: var(--color-5);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .font-size-buttons button:hover {
+            background-color: var(--color-4);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Pet's Social 🐾</a>
+            <button id="modoLecturaBtn" class="btn btn-primary">Activar Modo Lectura</button>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <h1>¡Bienvenido a Pet's Social!</h1>
+        <p>Comparte fotos y videos de tus mascotas, conoce amigos y descubre contenido adorable. 🐶🐱</p>
+        <div class="cta-buttons">
+            <a href="login.php" class="btn btn-primary">Regístrate</a>
+            <a href="login.php" class="btn btn-primary2">Iniciar Sesión</a>
+        </div>
+    </div>
+
+    <div class="features-section">
+        <div class="feature-card">
+            <i class="fas fa-paw"></i>
+            <h3>Comunidad</h3>
+            <p>Conéctate con otros amantes de las mascotas y comparte momentos especiales.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-heart"></i>
+            <h3>Likes y Comentarios</h3>
+            <p>Interactúa con publicaciones y muestra tu amor por las mascotas.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-camera"></i>
+            <h3>Fotos y Videos</h3>
+            <p>Sube y comparte las mejores fotos y videos de tus mascotas.</p>
+        </div>
+    </div>
+
+    <!-- Botones para ajustar el tamaño de la fuente -->
+    <div class="font-size-buttons">
+        <button id="increaseFontSize">A+</button>
+        <button id="decreaseFontSize">A-</button>
+    </div>
+
+    <script>
+        // Ajustar el tamaño de la fuente
+        const increaseFontSizeBtn = document.getElementById('increaseFontSize');
+        const decreaseFontSizeBtn = document.getElementById('decreaseFontSize');
+        const root = document.documentElement;
+
+        increaseFontSizeBtn.addEventListener('click', () => {
+            let currentSize = parseFloat(getComputedStyle(root).getPropertyValue('--font-size-base'));
+            if (currentSize < 24) { // Límite máximo de 24px
+                root.style.setProperty('--font-size-base', `${currentSize + 2}px`);
+            }
+        });
+
+        decreaseFontSizeBtn.addEventListener('click', () => {
+            let currentSize = parseFloat(getComputedStyle(root).getPropertyValue('--font-size-base'));
+            if (currentSize > 12) { // Límite mínimo de 12px
+                root.style.setProperty('--font-size-base', `${currentSize - 2}px`);
+            }
+        });
+
+        // Efectos de cursor
+        document.addEventListener('mousemove', (e) => {
+            const pawPrint = document.createElement('img');
+            pawPrint.src = 'img/image-removebg-preview (2).png'; 
+            pawPrint.className = 'paw-print';
+            pawPrint.style.left = `${e.pageX - 15}px`;
+            pawPrint.style.top = `${e.pageY - 15}px`;
+            document.body.appendChild(pawPrint);
+
+            setTimeout(() => {
+                pawPrint.remove();
+            }, 80);
+        });
+
+        // Modo lectura
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnModoLectura = document.getElementById("modoLecturaBtn");
+            let modoLecturaActivo = false;
+            const synth = window.speechSynthesis;
+
+            btnModoLectura.addEventListener("click", function () {
+                modoLecturaActivo = !modoLecturaActivo;
+
+                if (modoLecturaActivo) {
+                    btnModoLectura.textContent = "Desactivar Modo Lectura";
+                    document.body.addEventListener("mouseover", leerTextoBajoMouse);
+                } else {
+                    btnModoLectura.textContent = "Activar Modo Lectura";
+                    synth.cancel(); // Detener cualquier lectura en curso
+                    document.body.removeEventListener("mouseover", leerTextoBajoMouse);
+                }
+            });
+
+            function leerTextoBajoMouse(event) {
+                if (!modoLecturaActivo) return;
+
+                let texto = event.target.innerText.trim();
+                if (texto.length > 0) {
+                    synth.cancel(); // Detener cualquier lectura anterior
+                    const utterance = new SpeechSynthesisUtterance(texto);
+                    utterance.lang = "es-ES"; // Idioma español
+                    utterance.rate = 1; // Velocidad normal
+                    utterance.pitch = 1; // Tono normal
+                    synth.speak(utterance);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

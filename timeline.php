@@ -221,10 +221,22 @@ input, textarea, button {
         margin-bottom: 10px;
     }
 
+    .modal-image {
+        max-width: 100%;
+        max-height: 80vh; 
+        margin: 0 auto; 
+    }
+
     .btn-logout {
         background-color: var(--color-4);
         color: white;
         transition: background-color 0.2s ease-in-out;
+    }
+
+    .modal-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
     }
 
     .btn-logout:hover {
@@ -354,6 +366,7 @@ input, textarea, button {
                 </div>
 
         <?php foreach ($publicaciones as $publicacion): ?>
+
             <?php
                 // Obtener la foto de perfil del usuario para esta publicación
                 $sql_usuario = "SELECT foto_perfil FROM usuarios WHERE id = :usuario_id";
@@ -365,6 +378,10 @@ input, textarea, button {
                 if (!$usuario) {
                     $usuario['foto_perfil'] = 'ruta/default.jpg'; // Foto por defecto si no tiene foto
                 }
+
+                $sql_likes = "SELECT * FROM likes where id_publicacion = $publicacion[id]";
+                $stmt_likes = $pdo->query($sql_likes);
+                $likes = $stmt_likes->fetchAll(PDO::FETCH_ASSOC);
             ?>
             <div class="post">
                 <div class="post-header">
@@ -375,15 +392,15 @@ input, textarea, button {
                         </a>
                     </h5>
                 </div>
-                <p><?php echo htmlspecialchars($publicacion['descripcion']); ?></p>
+                <p><?php echo htmlspecialchars($publicacion['descripcion']);  ?></p>
                 <div class="post-image-container">
-                    <img src="<?php echo htmlspecialchars($publicacion['imagen_ruta']); ?>" alt="Imagen de publicación" class="post-image">
+                    <img src="<?php echo htmlspecialchars($publicacion['imagen_ruta']); ?>" alt="Imagen de publicación" class="post-image"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#imageModal" 
+                    data-image="<?= htmlspecialchars($publicacion['imagen_ruta']) ?>" 
+                    data-post-id="<?= htmlspecialchars($publicacion['id']) ?>" 
+                    data-likes="<?= htmlspecialchars(Count($likes) ?? 0) ?>">
                 </div>
-                <?php
-                    $sql = "SELECT * FROM likes where id_publicacion = $publicacion[id]";
-                    $stmt = $pdo->query($sql);
-                    $likes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                ?>
                 <div class="post-actions">
                     <button class="btn btn-primary btn-like" data-id="<?php echo $publicacion['id']; ?>"> 💗 Like : <strong class="likes"><?php echo htmlspecialchars(Count($likes) ?? 0); ?></strong></button>
                 </div>
@@ -424,18 +441,45 @@ input, textarea, button {
             </div>
         <?php endforeach; ?>
     </div>
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Columna para la imagen -->
+                        <div class="col-md-8">
+                            <img src="" class="modal-image img-fluid" alt="Imagen en grande" id="modalImage">
+                        </div>
+                        <!-- Columna para comentarios y likes -->
+                        <div class="col-md-4">
+                            <div class="comments-section">
+                                <h5>Comentarios</h5>
+                                <div id="modalComments"></div>
+                                <form id="commentForm" class="mt-3">
+                                    <textarea class="form-control" placeholder="Añade un comentario..." rows="2"></textarea>
+                                    <button type="submit" class="btn btn-primary mt-2">Comentar</button>
+                                </form>
+                            </div>
+                            <div class="likes-section mt-3">
+                                <h5>Likes</h5>
+                                <div id="modalLikes"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="font-size-buttons">
     <button id="increaseFontSize">A+</button>
     <button id="decreaseFontSize">A-</button>
 </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Escalar imágenes al hacer clic
-            $('.post-image').click(function() {
-                $(this).toggleClass('enlarged');
-            });
+
 
             // Likes
             $('.btn-like').click(function() {
@@ -552,6 +596,41 @@ input, textarea, button {
         }
     });
 });
+
+        $(document).ready(function() {
+            // Mostrar la imagen en grande en el modal con comentarios y likes
+            $('.post-image').click(function() {
+                const imageUrl = $(this).data('image');
+                const postId = $(this).data('post-id');
+                const likes = $(this).data('likes');
+
+                $('#modalImage').attr('src', imageUrl);
+                $('#modalLikes').html(`<p>${likes} likes</p>`);
+
+                // Hacer una solicitud AJAX para obtener los comentarios de la publicación específica
+                $.ajax({
+                    url: 'obtener_comentarios.php',
+                    method: 'GET',
+                    data: { post_id: postId },
+                    success: function(response) {
+                        const comments = JSON.parse(response);
+                        $('#modalComments').html(comments.map(comment => `<div class="comment"><strong>${comment.usuario}</strong>: ${comment.comentario}</div>`).join(''));
+                    },
+                    error: function() {
+                        $('#modalComments').html('<p>Error al cargar los comentarios.</p>');
+                    }
+                });
+            });
+            // Manejar el envío de comentarios
+            $('#commentForm').submit(function(e) {
+                e.preventDefault();
+                const commentText = $(this).find('textarea').val();
+                if (commentText.trim() !== '') {
+                    $('#modalComments').append(`<div class="comment"><strong>Usuario</strong>: ${commentText}</div>`);
+                    $(this).find('textarea').val('');
+                }
+            });
+        });
 
     </script>
 </body>

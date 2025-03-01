@@ -1,101 +1,103 @@
 <?php
-session_start();
+    session_start();
 
-// Verifica si el usuario está logueado
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-$usuario_id = $_SESSION['user_id'];  // Usar el ID del usuario logueado desde la sesión
+    // Verifica si el usuario está logueado
+    if (!isset($_SESSION['username'])) {
+        header("Location: login.php");
+        exit();
+    }
+    $usuario_id = $_SESSION['user_id'];  
 
-if ($usuario_id === null) {
-    die("Error: No se proporcionó un ID de usuario válido.");
-}
+    if ($usuario_id === null) {
+        die("Error: No se proporcionó un ID de usuario válido.");
+    }
 
-// Configuración de la base de datos
-$host = 'localhost';
-$dbname = 'petsinstagram'; 
-$username = 'root';
-$password = '';
+    // Configuración de la base de datos
+    $host = 'localhost';
+    $dbname = 'petsinstagram'; 
+    $username = 'root';
+    $password = '';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Error en la conexión: " . $e->getMessage());
-}
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $e) {
+        die("Error en la conexión: " . $e->getMessage());
+    }
 
-// Obtener publicaciones del usuario logueado
-$sql = "SELECT * FROM publicaciones WHERE usuario = ? ORDER BY id DESC";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$_SESSION['username']]);
-$publicaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Obtener publicaciones del usuario logueado
+    $sql = "SELECT * FROM publicaciones WHERE usuario = ? ORDER BY id DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$_SESSION['username']]);
+    $publicaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Obtener comentarios
-$sql_comentarios = "SELECT * FROM comentarios WHERE id_respuesta IS NULL ORDER BY id ASC";
-$sql_respuestas = "SELECT * FROM comentarios WHERE id_respuesta IS NOT NULL ORDER BY id ASC";
-$stmt_comentarios = $pdo->query($sql_comentarios);
-$stmt_respuestas = $pdo->query($sql_respuestas);
-$comentarios = $stmt_comentarios->fetchAll(PDO::FETCH_ASSOC);
-$respuestas = $stmt_respuestas->fetchAll(PDO::FETCH_ASSOC);
-
-$sql_seguidores = "SELECT COUNT(*) as count FROM seguidores WHERE usuario_seguido = ?";
-$stmt_seguidores = $pdo->prepare($sql_seguidores);
-$stmt_seguidores->execute([$usuario_id]);
-$seguidores = $stmt_seguidores->fetch();
-$cantidad_seguidores = $seguidores['count'];
+    // Obtener comentarios
+    $sql_comentarios = "SELECT * FROM comentarios WHERE id_respuesta IS NULL ORDER BY id ASC";
+    $sql_respuestas = "SELECT * FROM comentarios WHERE id_respuesta IS NOT NULL ORDER BY id ASC";
+    $stmt_comentarios = $pdo->query($sql_comentarios);
+    $stmt_respuestas = $pdo->query($sql_respuestas);
+    $comentarios = $stmt_comentarios->fetchAll(PDO::FETCH_ASSOC);
+    $respuestas = $stmt_respuestas->fetchAll(PDO::FETCH_ASSOC);
 
 
+    // Obtener comentarios de la publicación específica
+    $sql_comentarios = "SELECT * FROM comentarios WHERE id_publicacion = ? AND id_respuesta IS NULL ORDER BY id ASC";
+    $sql_respuestas = "SELECT * FROM comentarios WHERE id_publicacion = ? AND id_respuesta IS NOT NULL ORDER BY id ASC";
 
-// Conexión para foto de perfil
-$host_db = "localhost";
-$user_db = "root";
-$password_db = "";
-$dbname_db = "petsInstagram";
+    $sql_seguidores = "SELECT COUNT(*) as count FROM seguidores WHERE usuario_seguido = ?";
+    $stmt_seguidores = $pdo->prepare($sql_seguidores);
+    $stmt_seguidores->execute([$usuario_id]);
+    $seguidores = $stmt_seguidores->fetch();
+    $cantidad_seguidores = $seguidores['count'];
 
-$conn = new mysqli($host_db, $user_db, $password_db, $dbname_db);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
+    $host_db = "localhost";
+    $user_db = "root";
+    $password_db = "";
+    $dbname_db = "petsInstagram";
 
-$user_id = $_SESSION['user_id'];
-$message = "";
+    $conn = new mysqli($host_db, $user_db, $password_db, $dbname_db);
+    if ($conn->connect_error) {
+        die("Error de conexión: " . $conn->connect_error);
+    }
 
-// Procesar subida de foto de perfil
-if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-    $tipoArchivo = $_FILES['photo']['type'];
-    $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif'];
+    $user_id = $_SESSION['user_id'];
+    $message = "";
 
-    if (!in_array($tipoArchivo, $tiposPermitidos)) {
-        $message = "Solo se permiten imágenes JPEG, PNG o GIF.";
-    } else {
-        if ($_FILES['photo']['size'] > 5000000) {
-            $message = "El archivo es demasiado grande. El tamaño máximo permitido es 5MB.";
+    // Procesar subida de foto de perfil
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+        $tipoArchivo = $_FILES['photo']['type'];
+        $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif'];
+
+        if (!in_array($tipoArchivo, $tiposPermitidos)) {
+            $message = "Solo se permiten imágenes JPEG, PNG o GIF.";
         } else {
-            $carpetaDestino = "uploads/";
-            if (!is_dir($carpetaDestino)) {
-                mkdir($carpetaDestino, 0777, true);
-            }
-
-            $nombreArchivo = time() . "_" . basename($_FILES['photo']['name']);
-            $rutaDestino = $carpetaDestino . $nombreArchivo;
-
-            if (move_uploaded_file($_FILES['photo']['tmp_name'], $rutaDestino)) {
-                $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id = ?");
-                $stmt->bind_param("si", $rutaDestino, $user_id);
-
-                if ($stmt->execute()) {
-                    $message = "Foto de perfil actualizada con éxito.";
-                    $_SESSION['pet_photo'] = $rutaDestino;
-                } else {
-                    $message = "Error al actualizar la foto de perfil.";
-                }
+            if ($_FILES['photo']['size'] > 5000000) {
+                $message = "El archivo es demasiado grande. El tamaño máximo permitido es 5MB.";
             } else {
-                $message = "Error al mover el archivo al servidor.";
+                $carpetaDestino = "uploads/";
+                if (!is_dir($carpetaDestino)) {
+                    mkdir($carpetaDestino, 0777, true);
+                }
+
+                $nombreArchivo = time() . "_" . basename($_FILES['photo']['name']);
+                $rutaDestino = $carpetaDestino . $nombreArchivo;
+
+                if (move_uploaded_file($_FILES['photo']['tmp_name'], $rutaDestino)) {
+                    $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id = ?");
+                    $stmt->bind_param("si", $rutaDestino, $user_id);
+
+                    if ($stmt->execute()) {
+                        $message = "Foto de perfil actualizada con éxito.";
+                        $_SESSION['pet_photo'] = $rutaDestino;
+                    } else {
+                        $message = "Error al actualizar la foto de perfil.";
+                    }
+                } else {
+                    $message = "Error al mover el archivo al servidor.";
+                }
             }
         }
     }
-}
 ?>
 
 <!DOCTYPE html>
@@ -245,11 +247,11 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         background-color: var(--color-4);
     }
 
-    /* Estilos para la cuadrícula de publicaciones */
+
     .posts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Columnas de 200px */
-        gap: 16px; /* Espacio entre publicaciones */
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+        gap: 16px; 
         padding: 20px;
     }
 
@@ -258,7 +260,7 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         border-radius: var(--border-radius);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        overflow: hidden; /* Para que las imágenes no se salgan del contenedor */
+        overflow: hidde;
         position: relative;
     }
 
@@ -270,12 +272,12 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
     .post-image-container {
         position: relative;
         overflow: hidden;
-        cursor: pointer; /* Cambiar el cursor a pointer para indicar que es clickeable */
+        cursor: pointer; /
     }
 
     .post-image {
         width: 100%;
-        aspect-ratio: 1; /* Mantener la imagen cuadrada */
+        aspect-ratio: 1; 
         object-fit: cover;
         transition: transform 0.3s ease, opacity 0.3s ease;
     }
@@ -342,7 +344,7 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         }
     }
 
-    /* Nuevos estilos para la sección de perfil y formulario */
+
     .profile-and-upload {
         display: flex;
         align-items: flex-start;
@@ -364,11 +366,11 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         }
     }
 
-    /* Estilos para el modal de imagen */
+
     .modal-image {
         max-width: 100%;
-        max-height: 80vh; /* Limitar la altura del modal */
-        margin: 0 auto; /* Centrar la imagen en el modal */
+        max-height: 80vh; 
+        margin: 0 auto; 
     }
     .btn-secondary {
         background-color: var(--color-2);
@@ -404,6 +406,27 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
     .font-size-buttons button:hover {
         background-color: var(--color-4);
         transform: scale(1.1);
+    }
+     .modal-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
+
+    .comments-section {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .comment {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+
+    .likes-section {
+        margin-top: 20px;
     }
 </style>
 </head>
@@ -458,8 +481,7 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
                 <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload"></i> Actualizar</button>
             </form>
         </section>
-
-        <!-- Sección de Publicaciones en Cuadrícula -->
+        
         <section class="posts-grid">
             <?php if (empty($publicaciones)): ?>
                 <p>No hay publicaciones disponibles.</p>
@@ -471,31 +493,39 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
                         $stmt_comentarios_count = $pdo->prepare($sql_comentarios_count);
                         $stmt_comentarios_count->execute([$post['id']]);
                         $comentarios_count = $stmt_comentarios_count->fetchColumn();
+
+                        // Obtener la cantidad de likes para esta publicación
+                        $sql_likes = "SELECT COUNT(*) as count FROM likes WHERE id_publicacion = ?";
+                        $stmt_likes = $pdo->prepare($sql_likes);
+                        $stmt_likes->execute([$post['id']]);
+                        $likes = $stmt_likes->fetchColumn();
                     ?>
                     <article class="post-card">
-                        <div class="post-image-container" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="<?= htmlspecialchars($post['imagen_ruta']) ?>">
-                            <img src="<?= htmlspecialchars($post['imagen_ruta']) ?>" class="post-image" alt="Publicación">
-                        </div>
+                    <div class="post-image-container" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#imageModal" 
+                        data-image="<?= htmlspecialchars($post['imagen_ruta']) ?>" 
+                        data-post-id="<?= htmlspecialchars($post['id']) ?>" 
+                        data-likes="<?= htmlspecialchars($likes) ?>">
+                        <img src="<?= htmlspecialchars($post['imagen_ruta']) ?>" class="post-image" alt="Publicación">
+                    </div>
                         <div class="post-content">
                             <div class="d-flex align-items-center gap-3 mb-3">
                                 <img src="<?= htmlspecialchars($_SESSION['pet_photo']) ?>" class="rounded-circle" width="40" height="40" alt="Perfil">
                                 <span class="font-weight-bold"><?= htmlspecialchars($post['usuario']) ?></span>
                             </div>
                             <p class="mb-3"><?= htmlspecialchars($post['descripcion']) ?></p>
-                            
-                            <!-- Botones de reacción y comentarios -->
+
+                            <!-- Botode reacción y comentarios -->
                             <div class="d-flex justify-content-between mt-3">
-                                <?php
-                                    $sql = "SELECT COUNT(*) as count FROM likes WHERE id_publicacion = {$post['id']}";
-                                    $stmt = $pdo->query($sql);
-                                    $likes = $stmt->fetchColumn();
-                                ?>
+
                                 <button class="reaction-btn" data-id="<?= $post['id'] ?>">
                                     <i class="fas fa-thumbs-up"></i> <?= number_format($likes) ?>
                                 </button>
                                 <button class="reaction-btn">
                                     <i class="fas fa-comment"></i> <?= number_format($comentarios_count) ?>
                                 </button>
+
                             </div>
                         </div>
                     </article>
@@ -504,16 +534,39 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         </section>
     </main>
 
-    <!-- Modal para mostrar la imagen en grande -->
+   <!-- Modal para mostrar la imagen en grande con comentarios y likes -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-body text-center">
-                    <img src="" class="modal-image" alt="Imagen en grande" id="modalImage">
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Columna para la imagen -->
+                        <div class="col-md-8">
+                            <img src="" class="modal-image img-fluid" alt="Imagen en grande" id="modalImage">
+                        </div>
+                        <!-- Columna para comentarios y likes -->
+                        <div class="col-md-4">
+                            <div class="comments-section">
+                                <h5>Comentarios</h5>
+                                <div id="modalComments"></div>
+                                <form id="commentForm" class="mt-3">
+                                    <textarea class="form-control" placeholder="Añade un comentario..." rows="2"></textarea>
+                                    <button type="submit" class="btn btn-primary mt-2">Comentar</button>
+                                </form>
+                            </div>
+                            <div class="likes-section mt-3">
+                                <h5>Likes</h5>
+                                <div id="modalLikes"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+
     <div id="fixed-buttons" style="position: fixed; top: 840px; right: 20px; z-index: 1000;">
 
     <div class="font-size-buttons d-flex gap-2">
@@ -531,121 +584,135 @@ if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnModoLectura = document.getElementById("toggleReadAloud");
+            let modoLecturaActivo = false;
+            const synth = window.speechSynthesis;
+
+            btnModoLectura.addEventListener("click", function () {
+                modoLecturaActivo = !modoLecturaActivo;
+
+                if (modoLecturaActivo) {
+                    btnModoLectura.textContent = "Desactivar Lectura";
+                    document.body.addEventListener("mouseover", leerTextoBajoMouse);
+                    // Hacer que lea el texto del textarea mientras el usuario lo edita
+                    document.querySelector('textarea[name="description"]').addEventListener('input', leerTextarea);
+                } else {
+                    btnModoLectura.textContent = "Activar Lectura";
+                    synth.cancel(); // Detener cualquier lectura en curso
+                    document.body.removeEventListener("mouseover", leerTextoBajoMouse);
+                    document.querySelector('textarea[name="description"]').removeEventListener('input', leerTextarea);
+                }
+            });
+
+            function leerTextoBajoMouse(event) {
+                if (!modoLecturaActivo) return;
+
+                let texto = "";
+
+                // Si el usuario pasa por encima de una imagen, leer mensaje sobre la foto
+                if (event.target.classList.contains('post-image')) {
+                    const post = event.target.closest('.post-card');
+                    const postUserName = post.querySelector('.font-weight-bold').innerText;
+                    texto = `Estás visualizando la foto de: ${postUserName}`;
+                }
+
+                else if (event.target.classList.contains('reaction-btn')) {
+                    const icono = event.target.querySelector('i');
+
+                    if (icono.classList.contains('fa-thumbs-up')) {
+                        const likesCount = icono.nextSibling.textContent.trim();
+                        texto = `Esta publicación tiene ${likesCount} likes. Dar like.`;
+                    } else if (icono.classList.contains('fa-comment')) {
+                        const commentsCount = icono.nextSibling.textContent.trim();
+                        texto = `Esta publicación tiene ${commentsCount} comentarios. Ver comentarios.`;
+                    }
+                }
+
+                // Si el usuario pasa por encima de un texto
+                else if (event.target.innerText) {
+                    texto = event.target.innerText.trim();
+                }
+
+                if (texto.length > 0) {
+                    synth.cancel(); // Detener cualquier lectura anterior
+                    const utterance = new SpeechSynthesisUtterance(texto);
+                    utterance.lang = "es-ES"; // Idioma español
+                    utterance.rate = 1; // Velocidad normal
+                    utterance.pitch = 1; // Tono normal
+                    synth.speak(utterance);
+                }
+            }
+
+            function leerTextarea(event) {
+                if (!modoLecturaActivo) return;
+
+                const texto = event.target.value.trim();
+                if (texto.length > 0) {
+                    synth.cancel(); // Detener cualquier lectura anterior
+                    const utterance = new SpeechSynthesisUtterance(texto);
+                    utterance.lang = "es-ES"; // Idioma español
+                    utterance.rate = 1; // Velocidad normal
+                    utterance.pitch = 1; // Tono normal
+                    synth.speak(utterance);
+                }
+            }
+        }); 
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            const increaseFontBtn = document.getElementById("increaseFontBtn");
+            const decreaseFontBtn = document.getElementById("decreaseFontBtn");
+            const body = document.body;
+            let fontSize = 16; // Tamaño base
+
+            increaseFontBtn.addEventListener("click", function () {
+                fontSize += 2; // Aumenta el tamaño de la fuente
+                body.style.fontSize = fontSize + "px";
+            });
+
+            decreaseFontBtn.addEventListener("click", function () {
+                if (fontSize > 10) {
+                    fontSize -= 2; // Disminuye el tamaño de la fuente
+                    body.style.fontSize = fontSize + "px";
+                }
+            });
+        });
+
+
         $(document).ready(function() {
-            // Cambiar foto de perfil
-            $('#changeProfilePicBtn').click(function() {
-                $('.update-photo-container').toggleClass('d-none');
-            });
-
-            // Comentarios y respuestas
-            $('.btn-comment').click(function() {
-                let postId = $(this).data('postId');
-                let comment = $(this).siblings('.comment-input').val();
-                
-                $.post('procesar_comentario.php', { postId: postId, comment: comment })
-                    .done(() => location.reload());
-            });
-
-            // Mostrar la imagen en grande en el modal
+            // Mostrar la imagen en grande en el modal con comentarios y likes
             $('.post-image-container').click(function() {
                 const imageUrl = $(this).data('image');
+                const postId = $(this).data('post-id');
+                const likes = $(this).data('likes');
+
                 $('#modalImage').attr('src', imageUrl);
+                $('#modalLikes').html(`<p>${likes} likes</p>`);
+
+                // Hacer una solicitud AJAX para obtener los comentarios de la publicación específica
+                $.ajax({
+                    url: 'obtener_comentarios.php',
+                    method: 'GET',
+                    data: { post_id: postId },
+                    success: function(response) {
+                        const comments = JSON.parse(response);
+                        $('#modalComments').html(comments.map(comment => `<div class="comment"><strong>${comment.usuario}</strong>: ${comment.comentario}</div>`).join(''));
+                    },
+                    error: function() {
+                        $('#modalComments').html('<p>Error al cargar los comentarios.</p>');
+                    }
+                });
+            });
+            // Manejar el envío de comentarios
+            $('#commentForm').submit(function(e) {
+                e.preventDefault();
+                const commentText = $(this).find('textarea').val();
+                if (commentText.trim() !== '') {
+                    $('#modalComments').append(`<div class="comment"><strong>Usuario</strong>: ${commentText}</div>`);
+                    $(this).find('textarea').val('');
+                }
             });
         });
-
-document.addEventListener("DOMContentLoaded", function () {
-    const btnModoLectura = document.getElementById("toggleReadAloud");
-    let modoLecturaActivo = false;
-    const synth = window.speechSynthesis;
-
-    btnModoLectura.addEventListener("click", function () {
-        modoLecturaActivo = !modoLecturaActivo;
-
-        if (modoLecturaActivo) {
-            btnModoLectura.textContent = "Desactivar Lectura";
-            document.body.addEventListener("mouseover", leerTextoBajoMouse);
-            // Hacer que lea el texto del textarea mientras el usuario lo edita
-            document.querySelector('textarea[name="description"]').addEventListener('input', leerTextarea);
-        } else {
-            btnModoLectura.textContent = "Activar Lectura";
-            synth.cancel(); // Detener cualquier lectura en curso
-            document.body.removeEventListener("mouseover", leerTextoBajoMouse);
-            document.querySelector('textarea[name="description"]').removeEventListener('input', leerTextarea);
-        }
-    });
-
-    function leerTextoBajoMouse(event) {
-        if (!modoLecturaActivo) return;
-
-        let texto = "";
-
-        // Si el usuario pasa por encima de una imagen, leer mensaje sobre la foto
-        if (event.target.classList.contains('post-image')) {
-            const post = event.target.closest('.post-card');
-            const postUserName = post.querySelector('.font-weight-bold').innerText;
-            texto = `Estás visualizando la foto de: ${postUserName}`;
-        }
-
-        else if (event.target.classList.contains('reaction-btn')) {
-            const icono = event.target.querySelector('i');
-
-            if (icono.classList.contains('fa-thumbs-up')) {
-                const likesCount = icono.nextSibling.textContent.trim();
-                texto = `Esta publicación tiene ${likesCount} likes. Dar like.`;
-            } else if (icono.classList.contains('fa-comment')) {
-                const commentsCount = icono.nextSibling.textContent.trim();
-                texto = `Esta publicación tiene ${commentsCount} comentarios. Ver comentarios.`;
-            }
-        }
-
-        // Si el usuario pasa por encima de un texto
-        else if (event.target.innerText) {
-            texto = event.target.innerText.trim();
-        }
-
-        if (texto.length > 0) {
-            synth.cancel(); // Detener cualquier lectura anterior
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = "es-ES"; // Idioma español
-            utterance.rate = 1; // Velocidad normal
-            utterance.pitch = 1; // Tono normal
-            synth.speak(utterance);
-        }
-    }
-
-    function leerTextarea(event) {
-        if (!modoLecturaActivo) return;
-
-        const texto = event.target.value.trim();
-        if (texto.length > 0) {
-            synth.cancel(); // Detener cualquier lectura anterior
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = "es-ES"; // Idioma español
-            utterance.rate = 1; // Velocidad normal
-            utterance.pitch = 1; // Tono normal
-            synth.speak(utterance);
-        }
-    }
-}); 
-    document.addEventListener("DOMContentLoaded", function () {
-        const increaseFontBtn = document.getElementById("increaseFontBtn");
-        const decreaseFontBtn = document.getElementById("decreaseFontBtn");
-        const body = document.body;
-        let fontSize = 16; // Tamaño base
-
-        increaseFontBtn.addEventListener("click", function () {
-            fontSize += 2; // Aumenta el tamaño de la fuente
-            body.style.fontSize = fontSize + "px";
-        });
-
-        decreaseFontBtn.addEventListener("click", function () {
-            if (fontSize > 10) {
-                fontSize -= 2; // Disminuye el tamaño de la fuente
-                body.style.fontSize = fontSize + "px";
-            }
-        });
-    });
-
     </script>
 </body>
 </html>

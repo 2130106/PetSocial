@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Verifica si el ID del usuario ha sido pasado en la URL
 if (!isset($_GET['id'])) {
     die("Usuario no especificado Arriba.");
 }
@@ -32,7 +31,7 @@ if (!$usuario) {
 
 //var_dump($usuario);
 
-// Obtener publicaciones del usuario seleccionado
+
 $sql_publicaciones = "SELECT * FROM publicaciones WHERE usuario_id = ? ORDER BY id DESC";
 $stmt_publicaciones = $pdo->prepare($sql_publicaciones);
 $stmt_publicaciones->execute([$usuario_id]);

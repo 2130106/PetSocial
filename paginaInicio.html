@@ -15,7 +15,7 @@
             --color-4: #d57b9b;
             --color-5: #b65d7e;
             --border-radius: 20px;
-            --font-size-base: 16px; /* Tamaño base de la fuente */
+            --font-size-base: 16px; 
         }
 
         body {
@@ -25,7 +25,7 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            font-size: var(--font-size-base); /* Usar la variable para el tamaño de la fuente */
+            font-size: var(--font-size-base); 
         }
 
         .navbar {
@@ -40,8 +40,7 @@
         }
 
         .navbar-brand {
-            font-size: calc(var(--font-size-base) * 1.75); /* Tamaño relativo */
-            font-weight: bold;
+            font-size: calc(var(--font-size-base) * 1.75); 
             color: #ffffff !important;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease;
@@ -91,7 +90,7 @@
 
         .hero-section h1 {
             color: var(--color-5);
-            font-size: calc(var(--font-size-base) * 3); /* Tamaño relativo */
+            font-size: calc(var(--font-size-base) * 3); 
             font-weight: bold;
             margin-bottom: 20px;
             animation: float 3s ease-in-out infinite;
@@ -99,7 +98,7 @@
 
         .hero-section p {
             color: var(--color-5);
-            font-size: calc(var(--font-size-base) * 1.25); /* Tamaño relativo */
+            font-size: calc(var(--font-size-base) * 1.25); 
             max-width: 600px;
             margin: 0 auto 30px;
             animation: fadeInUp 2s ease-in-out;
@@ -113,7 +112,7 @@
         }
 
         .cta-buttons .btn {
-            font-size: calc(var(--font-size-base) * 1.125); /* Tamaño relativo */
+            font-size: calc(var(--font-size-base) * 1.125); 
             padding: 12px 30px;
             border-radius: var(--border-radius);
         }
@@ -145,7 +144,7 @@
         }
 
         .feature-card i {
-            font-size: calc(var(--font-size-base) * 2.5); /* Tamaño relativo */
+            font-size: calc(var(--font-size-base) * 2.5); 
             color: var(--color-5);
             margin-bottom: 15px;
             transition: transform 0.3s ease;
@@ -157,14 +156,14 @@
 
         .feature-card h3 {
             color: var(--color-5);
-            font-size: calc(var(--font-size-base) * 1.5); /* Tamaño relativo */
+            font-size: calc(var(--font-size-base) * 1.5);
             font-weight: bold;
             margin-bottom: 10px;
         }
 
         .feature-card p {
             color: var(--color-4);
-            font-size: calc(var(--font-size-base) * 1); /* Tamaño relativo */
+            font-size: calc(var(--font-size-base) * 1); 
         }
 
         @keyframes float {
@@ -225,7 +224,7 @@
             }
         }
 
-        /* Botones de tamaño de fuente */
+
         .font-size-buttons {
             position: fixed;
             bottom: 20px;
@@ -352,11 +351,11 @@
 
                 let texto = event.target.innerText.trim();
                 if (texto.length > 0) {
-                    synth.cancel(); // Detener cualquier lectura anterior
+                    synth.cancel(); 
                     const utterance = new SpeechSynthesisUtterance(texto);
                     utterance.lang = "es-ES"; // Idioma español
-                    utterance.rate = 1; // Velocidad normal
-                    utterance.pitch = 1; // Tono normal
+                    utterance.rate = 1;
+                    utterance.pitch = 1; 
                     synth.speak(utterance);
                 }
             }

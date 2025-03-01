@@ -11,10 +11,10 @@
         die("Error de conexión: " . $conn->connect_error);
     }
 
-    // Iniciar sesión
+
     session_start();
 
-    // Procesar formulario
+
     $message = "";
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -31,7 +31,7 @@
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
                 if (password_verify($password, $row['contrasena'])) {
-                    // Guardar datos del usuario en sesión
+                    
                     $_SESSION['user_id'] = $row['id'];
                     $_SESSION['username'] = $row['nombre'] . ' ' . $row['apellido'];
                     $_SESSION['pet_name'] = $row['nombre_mascota'];
@@ -44,8 +44,9 @@
             } else {
                 $message = "No se encontró el usuario.";
             }
+
         } elseif (isset($_POST['register'])) {
-            // Registro de usuario
+
             $nombre = $_POST['registerName'];
             $apellido = $_POST['registerLastName'];
             $fechaNacimiento = $_POST['registerDOB'];
@@ -53,10 +54,10 @@
             $password = $_POST['registerPassword'];
             $nombreMascota = $_POST['registerPetName'];
 
-            // Cifrar contraseña
+
             $passwordHashed = password_hash($password, PASSWORD_DEFAULT);
 
-            // Manejo de la imagen de la mascota
+
             $fotoPerfil = null;
             if (isset($_FILES['registerPetPhoto']) && $_FILES['registerPetPhoto']['error'] === UPLOAD_ERR_OK) {
                 $carpetaDestino = "uploads/";
